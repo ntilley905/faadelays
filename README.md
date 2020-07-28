@@ -7,7 +7,7 @@ This is a simple Python package used to retrieve data from the FAA's ASWS API. S
 The following classes are available and in some cases dynamically generated when retrieving data:
 
 Class | Information Provided | Methods
-- | - | -
+--- | --- | ---
 ArriveDepartDelay | Airport, Status, Minimum delay, Maximum delay, Trend, Reason
 GroundDelay | Airport, Status, Average delay, Reason
 GroundStop | Airport, Status, End Time, Reason
