@@ -1,6 +1,5 @@
 """Fetch latest data from the FAA ASWS API."""
 from aiohttp import ClientSession, ClientResponseError
-import logging
 
 BASE_URL = "https://soa.smext.faa.gov/asws/api/airport/{}"
 
@@ -13,7 +12,7 @@ class ArriveDepartDelay:
         self.maximum = maximum
         self.trend = trend
         self.reason = reason
-    
+
 class GroundDelay:
     # Class for Ground Delays
     def __init__(self, airport, status=False, average=None, reason=None):
@@ -110,7 +109,7 @@ class Nationwide:
                 cl['reopen'],
                 cl['reason']
             )
-        
+
             self.closures.append(close)
 
         self.closure_count = data['Closures']['count']
@@ -176,7 +175,7 @@ class Airport:
                 data['Status'][ar]["Trend"],
                 data['Status'][ar]["Reason"]
             )
-        
+
         if de is False:
             self.depart_delay = ArriveDepartDelay(self.code)
         else:
@@ -198,7 +197,7 @@ class Airport:
                 data['Status'][gd]['AvgDelay'],
                 data['Status'][gd]['Reason']
             )
-        
+
         if gs is False:
             self.ground_stop = GroundStop(self.code)
         else:

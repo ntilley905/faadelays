@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="faadelays-ntilley905", # Replace with your own username
+    name="faadelays",
     version="0.0.1",
     author="Nathan Tilley",
     author_email="nathan@tilley.xyz",
@@ -13,6 +13,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/ntilley905/faadelays",
     packages=setuptools.find_packages(),
+    install_requires=['aiohttp'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
