@@ -3,6 +3,11 @@ from aiohttp import ClientSession, ClientResponseError
 
 BASE_URL = "https://soa.smext.faa.gov/asws/api/airport/{}"
 
+# define custom errors
+class InvalidAirport(Exception):
+    """Raised when the airport returns no data from the API."""
+    pass
+
 class ArriveDepartDelay:
     # Class for Arrival/Departure delays
     def __init__(self, airport, status=False, minimum=None, maximum=None, trend=None, reason=None):
@@ -142,8 +147,11 @@ class Airport:
                 resp.request_info,
                 resp.history,
                 )
-
-        self.name = data['Name']
+        try:
+            self.name = data['Name']
+        # check for key error here because if a name is not returned no other data will be either as the API does not recognize the airport
+        except KeyError:
+            raise InvalidAirport(self.code + " is not a valid airport")
         self.city = data['City']
         self.state = data['State']
         self.icao = data['ICAO']
