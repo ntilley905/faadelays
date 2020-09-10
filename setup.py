@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="faadelays",
-    version="0.0.2",
+    version="0.0.3",
     author="Nathan Tilley",
     author_email="nathan@tilley.xyz",
     description="A package to retrieve FAA airport status",
