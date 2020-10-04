@@ -121,7 +121,7 @@ class Nationwide:
 
 class Airport:
     # Class for storing data for an individual airport
-    def __init__(self, code):
+    def __init__(self, code, session: ClientSession):
         self.code = code
         self.name = None
         self.city = None
@@ -137,9 +137,10 @@ class Airport:
         self.arrive_delay = ArriveDepartDelay(self.code)
         self.closure = Closure(self.code)
         self.url = BASE_URL.format("status/" + self.code)
+        self.session = session
 
-    async def update(self, session: ClientSession):
-        resp = await session.get(self.url)
+    async def update(self):
+        resp = await self.session.get(self.url)
         if resp.status == 200:
             data = await resp.json()
         else:
