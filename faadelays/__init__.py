@@ -46,7 +46,7 @@ class Closure:
 
 class Nationwide:
     # Class for storing data from a nationwide API call
-    def __init__(self):
+    def __init__(self, session: ClientSession):
         self.url = BASE_URL.format("delays")
         self.count = 0
         self.ground_delays = []
@@ -57,9 +57,10 @@ class Nationwide:
         self.arrive_depart_count = 0
         self.closures = []
         self.closure_count = 0
+        self.session = session
 
-    async def update(self, session: ClientSession):
-        resp = await session.get(self.url)
+    async def update(self):
+        resp = await self.session.get(self.url)
         if resp.status == 200:
             data = await resp.json()
         else:
