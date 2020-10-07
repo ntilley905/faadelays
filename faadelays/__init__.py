@@ -230,13 +230,13 @@ class Airport:
             )
 
 async def get_nationwide_delays(session: ClientSession):
-    results = Nationwide()
-    await results.update(session)
+    results = Nationwide(session)
+    await results.update()
 
     return results
 
 async def get_airport_delays(code, session: ClientSession):
-    results = Airport(code)
-    await results.update(session)
+    results = Airport(code, session)
+    await results.update()
 
     return results
