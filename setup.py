@@ -11,6 +11,7 @@ setuptools.setup(
     description="A package to retrieve FAA airport status",
     long_description=long_description,
     long_description_content_type="text/markdown",
+    license="MIT",
     url="https://github.com/ntilley905/faadelays",
     packages=setuptools.find_packages(),
     install_requires=['aiohttp'],
