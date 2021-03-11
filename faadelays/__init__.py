@@ -43,6 +43,16 @@ class Closure:
         self.end = end
         self.reason = reason
 
+class Weather:
+    # Class for storing weather data for an airport
+    def __init__(self, airport, condition=None, visibility=None, updated=None, temp=None, wind=None):
+        self.airport = airport
+        self.condition = condition
+        self.visibility = visibility
+        self.updated = updated
+        self.temp = temp
+        self.wind = wind
+
 
 class Nationwide:
     # Class for storing data from a nationwide API call
@@ -137,6 +147,7 @@ class Airport:
         self.depart_delay = ArriveDepartDelay(self.code)
         self.arrive_delay = ArriveDepartDelay(self.code)
         self.closure = Closure(self.code)
+        self.weather = Weather(self.code)
         self.url = BASE_URL.format("status/" + self.code)
         self.session = session
 
@@ -161,10 +172,11 @@ class Airport:
         self.supported_airport = data['SupportedAirport']
         self.delay = data['Delay']
         self.delay_count = data['DelayCount']
-        self.weather = data['Weather']['Weather'][0]['Temp'][0]
-        self.visibility = data['Weather']['Visibility'][0]
-        self.temp = data['Weather']['Temp'][0]
-        self.wind = data['Weather']['Wind'][0]
+        self.weather.condition = data['Weather']['Weather'][0]['Temp'][0]
+        self.weather.visibility = data['Weather']['Visibility'][0]
+        self.weather.updated = data['Weather']['Meta'][0]['Updated']
+        self.weather.temp = data['Weather']['Temp'][0]
+        self.weather.wind = data['Weather']['Wind'][0]
 
         # Look for each type of delay in the API response
         # The API does not order the delays and does not return each in a consistent type so each has to use a different method
