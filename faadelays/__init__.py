@@ -166,13 +166,17 @@ class Airport:
         self.temp = data['Weather']['Temp'][0]
         self.wind = data['Weather']['Wind'][0]
 
-        # Look for each type of delay in the API response
-        # The API does not order the delays and does not return each in a consistent type so each has to use a different method
-        ar = next((i for i, d in enumerate(data['Status']) if d.get('Type') == "Arrival"), False)
-        de = next((i for i, d in enumerate(data['Status']) if d.get('Type') == "Departure"), False)
-        gd = next((i for i, d in enumerate(data['Status']) if d.get('Type') == "Ground Delay"), False)
-        gs = next((i for i, d in enumerate(data['Status']) if "EndTime" in d), False)
-        cl = next((i for i, d in enumerate(data['Status']) if "ClosureEnd" in d), False)
+        # If no delays, set all types to false
+        if self.delay == False:
+            ar = de = gd = gs = cl = False
+        else:
+            # Look for each type of delay in the API response
+            # The API does not order the delays and does not return each in a consistent type so each has to use a different method
+            ar = next((i for i, d in enumerate(data['Status']) if d.get('Type') == "Arrival"), False)
+            de = next((i for i, d in enumerate(data['Status']) if d.get('Type') == "Departure"), False)
+            gd = next((i for i, d in enumerate(data['Status']) if d.get('Type') == "Ground Delay"), False)
+            gs = next((i for i, d in enumerate(data['Status']) if "EndTime" in d), False)
+            cl = next((i for i, d in enumerate(data['Status']) if "ClosureEnd" in d), False)
 
         if ar is False:
             self.arrive_delay = ArriveDepartDelay(self.code)
