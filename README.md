@@ -12,8 +12,9 @@ ArriveDepartDelay | Airport, Status, Minimum delay, Maximum delay, Trend, Reason
 GroundDelay | Airport, Status, Average delay, Reason
 GroundStop | Airport, Status, End Time, Reason
 Closure | Airport, Status, Begin Time, End Time, Reason
+Weather | Airport, Condition, Visibility, Last Updated, Temperature, Wind
 Nationwide | Total count of delays, Array of Ground delays, Count of Ground Delays, Array of Ground Stops, Count of Ground Stops, Array of ArriveDepart Delays, Count of ArriveDepart Delays, Array of Closures, Count of Closures | Update
-Airport | Code (provide when creating, IATA format), Name, City, State, ICAO identifier, IATA identifier, Bool of Supported Airport, Bool of any delays, Count of delays, GroundDelay object, GroundStop object, Depart Delay object (ArriveDepartDelay), Arrive Delay object (ArriveDepartDelay), Closure object | Update
+Airport | Code (provide when creating, IATA format), Name, City, State, ICAO identifier, IATA identifier, Bool of Supported Airport, Bool of any delays, Count of delays, GroundDelay object, GroundStop object, Depart Delay object (ArriveDepartDelay), Arrive Delay object (ArriveDepartDelay), Closure object, Weather object | Update
 
 ## Methods Available
 
