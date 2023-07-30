@@ -56,6 +56,15 @@ class Closure:
         self.update_time = update_time
         self.notam = notam
 
+class AirportConfig:
+    # Class for storing airport config data
+    def __init__(self, airport, created_time=None, arrival_runway_config=None, departure_runway_config=None, arrival_rate=None, source_time_stamp=None):
+        self.airport = airport
+        self.created_time = created_time
+        self.arrival_runway_config = arrival_runway_config
+        self.departure_runway_config = departure_runway_config
+        self.arrival_rate = arrival_rate
+        self.source_time_stamp = source_time_stamp
 
 
 class Airport:
@@ -63,13 +72,12 @@ class Airport:
     def __init__(self, code, session: ClientSession):
         self.code = code
         self.name = None
-        self.city = None
-        self.state = None
-        self.icao = None
-        self.iata = None
+        self.latitude = None
+        self.longitude = None
+        self.is_deicing = False
         self.supported_airport = None
-        self.delay = None
-        self.delay_count = None
+        self.delay = False
+        self.delay_count = 0
         self.ground_delay = GroundDelay(self.code)
         self.ground_stop = GroundStop(self.code)
         self.depart_delay = ArriveDepartDelay(self.code)
@@ -93,6 +101,13 @@ class Airport:
             print(airport['airportId'])
             if airport['airportId'] == self.code:
                 print('airport found')
+
+                self.name = airport['airportLongName']
+                self.latitude = airport['latitude']
+                self.longitude = airport['longitude']
+
+                if airport['deicing']:
+                    self.is_deicing = True
                 
                 # check for each type of delay
                 if airport['groundStop']:
@@ -107,6 +122,7 @@ class Airport:
                         included_flights=airport['groundStop']['includedFlights'],
                         probability_of_extension=airport['groundStop']['probabilityOfExtension'],
                     )
+                    self.delay_count += 1
                 else:
                     self.GroundStop = GroundStop(self.code)
                 
@@ -121,6 +137,7 @@ class Airport:
                         reason=airport['arrivalDelay']['reason'],
                         update_time=airport['arrivalDelay']['updateTime'],
                     )
+                    self.delay_count += 1
                 
                 else:
                     self.arrive_delay = ArriveDepartDelay(self.code)
@@ -136,6 +153,7 @@ class Airport:
                         reason=airport['departureDelay']['reason'],
                         update_time=airport['departureDelay']['updateTime'],
                     )
+                    self.delay_count += 1
                 
                 else:
                     self.depart_delay = ArriveDepartDelay(self.code)
@@ -153,6 +171,7 @@ class Airport:
                         included_facilities=airport['groundDelay']['includedFacilities'],
                         included_flights=airport['groundDelay']['includedFlights'],
                     )
+                    self.delay_count += 1
                 
                 else:
                     self.ground_delay = GroundDelay(self.code)
@@ -181,6 +200,9 @@ class Airport:
 
                 else:
                     self.closure = Closure(self.code)
+
+                if self.delay_count > 0:
+                    self.delay = True                
 
                 return self
 
