@@ -90,7 +90,9 @@ class Airport:
 
         # iterate through returned data for correct airport
         for airport in data:
+            print(airport['airportId'])
             if airport['airportId'] == self.code:
+                print('airport found')
                 
                 # check for each type of delay
                 if airport['groundStop']:
@@ -180,16 +182,15 @@ class Airport:
                 else:
                     self.closure = Closure(self.code)
 
-            
-            # if airport is not in data then no programs are active
-            else:
-                self.arrive_delay = ArriveDepartDelay(self.code)
-                self.depart_delay = ArriveDepartDelay(self.code)
-                self.ground_stop = GroundStop(self.code)
-                self.ground_delay = GroundDelay(self.code)
-                self.closure = Closure(self.code)
+                return self
 
-            return self
+            
+        # if airport is not in data then no programs are active
+        self.arrive_delay = ArriveDepartDelay(self.code)
+        self.depart_delay = ArriveDepartDelay(self.code)
+        self.ground_stop = GroundStop(self.code)
+        self.ground_delay = GroundDelay(self.code)
+        self.closure = Closure(self.code)
 
                 
 
