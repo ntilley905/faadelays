@@ -98,9 +98,7 @@ class Airport:
 
         # iterate through returned data for correct airport
         for airport in data:
-            print(airport['airportId'])
             if airport['airportId'] == self.code:
-                print('airport found')
 
                 self.name = airport['airportLongName']
                 self.latitude = airport['latitude']
