@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "faadelays"
+version = "2023.8.0"
+authors = [
+  { name="Nathan Tilley", email="nathan@tilley.xyz" },
+]
+description = "A package to retrieve FAA airport status"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "aiohttp",
+]
+license = {file = "LICENSE"}
+
+[project.urls]
+"Homepage" = "https://github.com/ntilley905/faadelays"
+"Bug Tracker" = "https://github.com/ntilley905/faadelays/issues"

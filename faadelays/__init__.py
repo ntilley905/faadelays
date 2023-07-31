@@ -1,147 +1,93 @@
 """Fetch latest data from the FAA ASWS API."""
 from aiohttp import ClientSession, ClientResponseError
 
-BASE_URL = "https://soa.smext.faa.gov/asws/api/airport/{}"
+BASE_URL = "https://nasstatus.faa.gov/api/airport-events"
 
-# define custom errors
-class InvalidAirport(Exception):
-    """Raised when the airport returns no data from the API."""
-    pass
 
 class ArriveDepartDelay:
     # Class for Arrival/Departure delays
-    def __init__(self, airport, status=False, minimum=None, maximum=None, trend=None, reason=None):
+    def __init__(self, airport, status=False, minimum=None, maximum=None, average_delay=None, trend=None, reason=None, update_time=None):
         self.airport = airport
         self.status = status
         self.minimum = minimum
         self.maximum = maximum
+        self.average_delay = average_delay
         self.trend = trend
         self.reason = reason
+        self.update_time = update_time
 
 class GroundDelay:
     # Class for Ground Delays
-    def __init__(self, airport, status=False, average=None, reason=None):
+    def __init__(self, airport, status=False, average=None, max_delay=None, start_time=None, end_time=None, reason=None, update_time=None, advisory_url=None, departure_scope=None, included_facilities=None, included_flights=None):
         self.airport = airport
         self.status = status
         self.average = average
+        self.max_delay = max_delay
+        self.start_time = start_time
+        self.end_time = end_time
         self.reason = reason
+        self.update_time = update_time
+        self.advisory_url = advisory_url
+        self.departure_scope = departure_scope
+        self.included_facilities = included_facilities
+        self.included_flights = included_flights
+
 
 class GroundStop:
     # Class for Ground Stops
-    def __init__(self, airport, status=False, endtime=None, reason=None):
+    def __init__(self, airport, status=False, endtime=None, reason=None, update_time=None, advisory_url=None, included_facilities=None, included_flights=None, probability_of_extension=None):
         self.airport = airport
         self.status = status
         self.endtime = endtime
         self.reason = reason
+        self.update_time = update_time
+        self.advisory_url = advisory_url
+        self.included_facilities = included_facilities
+        self.included_flights = included_flights
+        self.probabibility_of_extension = probability_of_extension
 
 class Closure:
     # Class for closures
-    def __init__(self, airport, status=False, begin=None, end=None, reason=None):
+    def __init__(self, airport, status=False, start=None, end=None, reason=None, update_time=None, notam=None):
         self.airport = airport
         self.status = status
-        self.begin = begin
+        self.start = start
         self.end = end
-        self.reason = reason
+        self.update_time = update_time
+        self.notam = notam
 
+class AirportConfig:
+    # Class for storing airport config data
+    def __init__(self, airport, created_time=None, arrival_runway_config=None, departure_runway_config=None, arrival_rate=None, source_time_stamp=None):
+        self.airport = airport
+        self.created_time = created_time
+        self.arrival_runway_config = arrival_runway_config
+        self.departure_runway_config = departure_runway_config
+        self.arrival_rate = arrival_rate
+        self.source_time_stamp = source_time_stamp
 
-class Nationwide:
-    # Class for storing data from a nationwide API call
-    def __init__(self, session: ClientSession):
-        self.url = BASE_URL.format("delays")
-        self.count = 0
-        self.ground_delays = []
-        self.ground_delay_count = 0
-        self.ground_stops = []
-        self.ground_stop_count = 0
-        self.arrive_depart_delays = []
-        self.arrive_depart_count = 0
-        self.closures = []
-        self.closure_count = 0
-        self.session = session
-
-    async def update(self):
-        resp = await self.session.get(self.url)
-        if resp.status == 200:
-            data = await resp.json()
-        else:
-            raise ClientResponseError(
-                    resp.request_info,
-                    resp.history
-                    )
-        self.count = data['status']['count']
-
-        for gd in data['GroundDelays']['groundDelay']:
-            # Define a ground delay object and append that to the list of nationwide ground delays
-            gdelay = GroundDelay(gd['airport'],
-            True,
-            gd['avgTime'],
-            gd['reason'])
-
-            self.ground_delays.append(gdelay)
-
-        self.ground_delay_count = data['GroundDelays']['count']
-        for gs in data['GroundStops']['groundStop']:
-            # Define a ground stop object and append that to the list of nationwide ground stops
-            stop = GroundStop(
-                gs['airport'],
-                True,
-                gs['endTime'],
-                gs['reason']
-            )
-
-            self.ground_stops.append(stop)
-
-        self.ground_stop_count = data['GroundStops']['count']
-        for ad in data['ArriveDepartDelays']['arriveDepart']:
-            # Define an Arrival/Departure object and append that to the list of nationwide arrival/departure delays
-            ardp = ArriveDepartDelay(
-                ad['airport'],
-                True,
-                ad['minTime'],
-                ad['maxTime'],
-                None, # The API does not provide a trend for Arrival/Departure delays from the nationwide call so none will be passed through.
-                ad['reason']
-            )
-
-            self.arrive_depart_delays.append(ardp)
-
-        self.arrive_depart_count = data['ArriveDepartDelays']['count']
-        for cl in data['Closures']['closure']:
-            # Define a closure object and append that to the list of nationwide closures
-            close = Closure(
-                cl['airport'],
-                True,
-                None, # The API does not provide a beginning time for a closure from the nationwide call so none will be passed through.
-                cl['reopen'],
-                cl['reason']
-            )
-
-            self.closures.append(close)
-
-        self.closure_count = data['Closures']['count']
 
 class Airport:
     # Class for storing data for an individual airport
     def __init__(self, code, session: ClientSession):
         self.code = code
         self.name = None
-        self.city = None
-        self.state = None
-        self.icao = None
-        self.iata = None
+        self.latitude = None
+        self.longitude = None
+        self.is_deicing = False
         self.supported_airport = None
-        self.delay = None
-        self.delay_count = None
+        self.delay = False
+        self.delay_count = 0
         self.ground_delay = GroundDelay(self.code)
         self.ground_stop = GroundStop(self.code)
         self.depart_delay = ArriveDepartDelay(self.code)
         self.arrive_delay = ArriveDepartDelay(self.code)
         self.closure = Closure(self.code)
-        self.url = BASE_URL.format("status/" + self.code)
+        self.config = None
         self.session = session
 
     async def update(self):
-        resp = await self.session.get(self.url)
+        resp = await self.session.get(BASE_URL)
         if resp.status == 200:
             data = await resp.json()
         else:
@@ -149,95 +95,124 @@ class Airport:
                 resp.request_info,
                 resp.history,
                 )
-        try:
-            self.name = data['Name']
-        # check for key error here because if a name is not returned no other data will be either as the API does not recognize the airport
-        except KeyError:
-            raise InvalidAirport(self.code + " is not a valid airport")
-        self.city = data['City']
-        self.state = data['State']
-        self.icao = data['ICAO']
-        self.iata = data['IATA']
-        self.supported_airport = data['SupportedAirport']
-        self.delay = data['Delay']
-        self.delay_count = data['DelayCount']
-        self.weather = data['Weather']['Weather'][0]['Temp'][0]
-        self.visibility = data['Weather']['Visibility'][0]
-        self.temp = data['Weather']['Temp'][0]
-        self.wind = data['Weather']['Wind'][0]
 
-        # If no delays, set all types to false
-        if self.delay == False:
-            ar = de = gd = gs = cl = False
-        else:
-            # Look for each type of delay in the API response
-            # The API does not order the delays and does not return each in a consistent type so each has to use a different method
-            ar = next((i for i, d in enumerate(data['Status']) if d.get('Type') == "Arrival"), False)
-            de = next((i for i, d in enumerate(data['Status']) if d.get('Type') == "Departure"), False)
-            gd = next((i for i, d in enumerate(data['Status']) if d.get('Type') == "Ground Delay"), False)
-            gs = next((i for i, d in enumerate(data['Status']) if "EndTime" in d), False)
-            cl = next((i for i, d in enumerate(data['Status']) if "ClosureEnd" in d), False)
+        # iterate through returned data for correct airport
+        for airport in data:
+            if airport['airportId'] == self.code:
 
-        if ar is False:
-            self.arrive_delay = ArriveDepartDelay(self.code)
-        else:
-            self.arrive_delay = ArriveDepartDelay(
-                self.code,
-                True,
-                data['Status'][ar]["MinDelay"],
-                data['Status'][ar]["MaxDelay"],
-                data['Status'][ar]["Trend"],
-                data['Status'][ar]["Reason"]
-            )
+                self.name = airport['airportLongName']
+                self.latitude = airport['latitude']
+                self.longitude = airport['longitude']
 
-        if de is False:
-            self.depart_delay = ArriveDepartDelay(self.code)
-        else:
-            self.depart_delay = ArriveDepartDelay(
-                self.code,
-                True,
-                data['Status'][de]["MinDelay"],
-                data['Status'][de]["MaxDelay"],
-                data['Status'][de]["Trend"],
-                data['Status'][de]["Reason"]
-            )
+                if airport['deicing']:
+                    self.is_deicing = True
+                
+                # check for each type of delay
+                if airport['groundStop']:
+                    self.ground_stop = GroundStop(
+                        airport=self.code,
+                        status=True,
+                        endtime=airport['groundStop']['endTime'],
+                        reason=airport['groundStop']['impactingCondition'],
+                        update_time=airport['groundStop']['updatedAt'],
+                        advisory_url=airport['groundStop']['advisoryUrl'],
+                        included_facilities=airport['groundStop']['includedFacilities'],
+                        included_flights=airport['groundStop']['includedFlights'],
+                        probability_of_extension=airport['groundStop']['probabilityOfExtension'],
+                    )
+                    self.delay_count += 1
+                else:
+                    self.GroundStop = GroundStop(self.code)
+                
+                if airport['arrivalDelay']:
+                    self.arrive_delay = ArriveDepartDelay(
+                        airport=self.code,
+                        status=True,
+                        minimum=airport['arrivalDelay']['arrivalDeparture']['min'],
+                        maximum=airport['arrivalDelay']['arrivalDeparture']['max'],
+                        average_delay=airport['arrivalDelay']['averageDelay'],
+                        trend=airport['arrivalDelay']['arrivalDeparture']['trend'],
+                        reason=airport['arrivalDelay']['reason'],
+                        update_time=airport['arrivalDelay']['updateTime'],
+                    )
+                    self.delay_count += 1
+                
+                else:
+                    self.arrive_delay = ArriveDepartDelay(self.code)
+                
+                if airport['departureDelay']:
+                    self.depart_delay = ArriveDepartDelay(
+                        airport=self.code,
+                        status=True,
+                        minimum=airport['departureDelay']['arrivalDeparture']['min'],
+                        maximum=airport['departureDelay']['arrivalDeparture']['max'],
+                        average_delay=airport['departureDelay']['averageDelay'],
+                        trend=airport['departureDelay']['arrivalDeparture']['trend'],
+                        reason=airport['departureDelay']['reason'],
+                        update_time=airport['departureDelay']['updateTime'],
+                    )
+                    self.delay_count += 1
+                
+                else:
+                    self.depart_delay = ArriveDepartDelay(self.code)
 
-        if gd is False:
-            self.ground_delay = GroundDelay(self.code)
-        else:
-            self.ground_delay = GroundDelay(
-                self.code,
-                True,
-                data['Status'][gd]['AvgDelay'],
-                data['Status'][gd]['Reason']
-            )
+                if airport['groundDelay']:
+                    self.ground_delay = GroundDelay(
+                        airport=self.code,
+                        status=True,
+                        average=airport['groundDelay']['avgDelay'],
+                        max_delay=airport['groundDelay']['maxDelay'],
+                        reason=airport['groundDelay']['impactingCondition'],
+                        update_time=airport['groundDelay']['updatedAt'],
+                        advisory_url=airport['groundDelay']['advisoryUrl'],
+                        departure_scope=airport['groundDelay']['departureScope'],
+                        included_facilities=airport['groundDelay']['includedFacilities'],
+                        included_flights=airport['groundDelay']['includedFlights'],
+                    )
+                    self.delay_count += 1
+                
+                else:
+                    self.ground_delay = GroundDelay(self.code)
 
-        if gs is False:
-            self.ground_stop = GroundStop(self.code)
-        else:
-            self.ground_stop = GroundStop(
-                self.code,
-                True,
-                data['Status'][gs]['EndTime'],
-                data['Status'][gs]['Reason']
-            )
+                if airport['airportClosure']:
+                    self.closure = Closure(
+                        airport=self.code,
+                        status=True,
+                        start=airport['airportClosure']['startTime'],
+                        end=airport['airportClosure']['endTime'],
+                        update_time=airport['airportClosure']['updatedAt'],
+                        notam=airport['airportClosure']['simpleText'],
+                    )
 
-        if cl is False:
-            self.closure = Closure(self.code)
-        else:
-            self.closure = Closure(
-                self.code,
-                True,
-                data['Status'][cl]['ClosureBegin'],
-                data['Status'][cl]['ClosureEnd'],
-                data['Status'][cl]['Reason']
-            )
+                elif airport['freeForm']:
+                    # API doesn't always put closures in the actual closure field so check freeform
+                    if "CLSD" in airport['freeForm']['simpleText']:
+                        self.closure = Closure(
+                            airport=self.code,
+                            status=True,
+                            start=airport['freeForm']['startTime'],
+                            end=airport['freeForm']['endTime'],
+                            update_time=airport['freeForm']['updatedAt'],
+                            notam=airport['freeForm']['simpleText'],
+                        )
 
-async def get_nationwide_delays(session: ClientSession):
-    results = Nationwide(session)
-    await results.update()
+                else:
+                    self.closure = Closure(self.code)
 
-    return results
+                if self.delay_count > 0:
+                    self.delay = True                
+
+                return self
+
+            
+        # if airport is not in data then no programs are active
+        self.arrive_delay = ArriveDepartDelay(self.code)
+        self.depart_delay = ArriveDepartDelay(self.code)
+        self.ground_stop = GroundStop(self.code)
+        self.ground_delay = GroundDelay(self.code)
+        self.closure = Closure(self.code)
+
+                
 
 async def get_airport_delays(code, session: ClientSession):
     results = Airport(code, session)
