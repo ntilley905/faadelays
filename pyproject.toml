@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "faadelays"
-version = "2023.8.1"
+version = "2023.8.0"
 authors = [
   { name="Nathan Tilley", email="nathan@tilley.xyz" },
 ]
