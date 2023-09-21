@@ -70,7 +70,7 @@ class AirportConfig:
 class Airport:
     # Class for storing data for an individual airport
     def __init__(self, code, session: ClientSession):
-        self.code = code
+        self.code = code.upper()
         self.name = None
         self.latitude = None
         self.longitude = None
