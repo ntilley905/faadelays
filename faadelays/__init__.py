@@ -44,7 +44,7 @@ class GroundStop:
         self.advisory_url = advisory_url
         self.included_facilities = included_facilities
         self.included_flights = included_flights
-        self.probabibility_of_extension = probability_of_extension
+        self.probability_of_extension = probability_of_extension
 
 class Closure:
     # Class for closures
@@ -162,6 +162,8 @@ class Airport:
                         status=True,
                         average=airport['groundDelay']['avgDelay'],
                         max_delay=airport['groundDelay']['maxDelay'],
+                        start_time=airport['groundDelay']['startTime'],
+                        end_time=airport['groundDelay']['endTime'],
                         reason=airport['groundDelay']['impactingCondition'],
                         update_time=airport['groundDelay']['updatedAt'],
                         advisory_url=airport['groundDelay']['advisoryUrl'],
